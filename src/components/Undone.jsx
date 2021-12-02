@@ -1,33 +1,64 @@
 import styled from "styled-components";
-
+import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { deleteTask, moveTask, setUsers, getUsers } from "../TasksSlice";
+import { deleteTask, moveTask } from "../TasksSlice";
+import { getDatabase, ref, child, get } from "firebase/database";
+import { addStore } from "../TasksSlice";
 
 export const Undone = () => {
   const tasks = useSelector((state) => state.tasks.undone);
+  const uid = useSelector((state) => state.users.user.uid);
+  // const taskCountNum = useSelector((state) => state.tasks.taskCount);
+  console.log(tasks[0]);
 
   const dispatch = useDispatch();
 
-  const onDeleteTask = (i) => {
-    dispatch(deleteTask(i));
+  const onDeleteTask = (i, uid) => {
+    dispatch(deleteTask({ index: i, uid: uid }));
   };
   const onDone = (i, task) => {
     dispatch(moveTask({ index: i, taskObject: task }));
   };
 
+  // const deleteFromFireBase = () => {
+  //   const db = getDatabase();
+  //   db.ref("users").child(`${uid}/undone/0`).remove();
+  // };
+
+  useEffect(() => {
+    const dbRef = ref(getDatabase());
+    get(child(dbRef, `users/${uid}/undone/`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const res = snapshot.val();
+          // const undoneNum = res.length;
+          // console.log(undoneNum);
+          dispatch(addStore(res));
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [dispatch, uid]);
+
   return (
     <STaskArea>
       <STaskttl>Undone Tasks</STaskttl>
+      {/* <Sspan>{`今タスクが ${taskCountNum} 個あるよ`}</Sspan> */}
+      {tasks.length >= 5 && <Sp>You can add a task up to 5!</Sp>}
+
       <ul>
-        {tasks
-          // .filter((task) => task.completed === false)
-          .map((task, i) => (
-            <SList key={i}>
-              <Spar>{task.content}</Spar>
-              <SBtn onClick={() => onDone(i, task)}>Done</SBtn>
-              <SDBtn onClick={() => onDeleteTask(i)}>Delete</SDBtn>
-            </SList>
-          ))}
+        {/* {tasks[0].map((task) => console.log(task))} */}
+
+        {/* {tasks.map((task, i) => (
+          <SList key={i}>
+            <Spar>{task.content}</Spar>
+            <SBtn onClick={() => onDone(i, task)}>Done</SBtn>
+            <SDBtn onClick={() => onDeleteTask(i, uid)}>Delete</SDBtn>
+          </SList>
+        ))} */}
       </ul>
     </STaskArea>
   );
@@ -46,6 +77,18 @@ const STaskttl = styled.h2`
   text-align: center;
   color: #383c3c;
   font-family: "Cabin", sans-serif;
+`;
+
+const Sspan = styled.span`
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+`;
+
+const Sp = styled.p`
+  text-align: center;
+  color: #da536e;
 `;
 
 const SList = styled.li`

@@ -1,13 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { useDispatch } from "react-redux";
+import { getDatabase, ref, child, get, set, remove } from "firebase/database";
 
 const initialState = {
   undone: [
-    { content: "1Hello", completed: false },
-    { content: "2Hey!", completed: false },
-    { content: "3Hola~", completed: false },
-    { content: "4Yoh!", completed: false },
+    // { content: "1Hello", completed: false },
+    // { content: "2Hey!", completed: false },
+    // { content: "3Hola~", completed: false },
+    // { content: "4Yoh!", completed: false },
   ],
-  done: [{ content: "5", completed: false }],
+  done: [
+    // { content: "5", completed: false }
+  ],
 };
 
 export const TasksSlice = createSlice({
@@ -17,15 +21,29 @@ export const TasksSlice = createSlice({
   reducers: {
     //タスクの追加
     addStore: (state, action) => {
+      const tasks = action.payload;
+      const taskCountNum = tasks.length;
+      // console.log(taskCountNum);
+      const undDone = [...state.undone];
+      const newUnDone = undDone.concat(tasks);
       return {
-        undone: [...state.undone, action.payload],
+        undone: [...newUnDone],
         done: [...state.done],
+        taskCount: taskCountNum,
       };
     },
 
     //タスクの削除
     deleteTask: (state, action) => {
-      const i = action.payload;
+      console.log(action.payload);
+      const uid = action.payload.uid;
+
+      // const db = getDatabase();
+      // remove(ref(db, "users/" + uid + "/0/"));
+      // const db = getDatabase();
+      // db.ref("users").child(`${uid}/undone/0`).remove();
+
+      const i = action.payload.index;
       const newTasks = [...state.undone];
       newTasks.splice(i, 1);
       return {

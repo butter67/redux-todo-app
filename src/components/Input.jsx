@@ -1,20 +1,41 @@
 import styled from "styled-components";
-import axios from "axios";
+import { storage, db, auth } from "../firebase";
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addStore } from "../TasksSlice";
+import { selectUser } from "../feature/usersSlice";
+import { getDatabase, ref, set, push } from "firebase/database";
 
 export const Input = () => {
+  const uid = useSelector((state) => state.users.user.uid);
+  const taskCountNum = useSelector((state) => state.tasks.taskCount); //途中
+  // console.log(taskCountNum);
+
   const [val, setVal] = useState("");
+  const [countNum, setCountNum] = useState(0);
   const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setVal(() => e.target.value);
   };
 
-  const onAddStore = () => {
+  // const onAddStore = () => {
+  //   if (!val) return;
+  //   dispatch(addStore({ content: val, completed: false }));
+  //   setVal("");
+  // };
+
+  const writeUserData = (content, completed) => {
     if (!val) return;
     dispatch(addStore({ content: val, completed: false }));
+    const db = getDatabase();
+    push(ref(db, `users/${uid}/undone`), {
+      //途中
+      content: val,
+      completed: false,
+    });
+    // setCountNum((countNum) => countNum + 1);
+    // console.log(countNum);
     setVal("");
   };
 
@@ -25,13 +46,18 @@ export const Input = () => {
         onChange={handleChange}
         placeholder="Add something here!"
       />
-      <SAddBtn onClick={() => onAddStore(val)}>Add</SAddBtn>
+
+      <SAddBtn onClick={() => writeUserData(val)}>Add</SAddBtn>
+      {/* <SAddBtn onClick={() => onAddStore(val)}>Add</SAddBtn> */}
     </SInputArea>
   );
 };
 
 const SInputArea = styled.div`
   background: #fcfcfc;
+  text-align: center;
+  width: 100%;
+  margin-top: 16px;
 `;
 
 const SInput = styled.input`

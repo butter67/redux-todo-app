@@ -1,44 +1,52 @@
 import styled from "styled-components";
+import { useSelector, useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { TodosField } from "./components/TodosField";
+import { Login } from "./auth/Login";
+import { auth } from "./firebase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { selectUser, login, logout } from "./feature/usersSlice";
+import { Signin } from "./auth/Signin";
 
-import { Input } from "./components/Input";
-import { Undone } from "./components/Undone";
-import { Done } from "./components/Done";
+const App = () => {
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+  const auth = getAuth();
 
-function App() {
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log(user);
+        const uid = user.uid;
+        const displayName = user.displayName;
+        console.log(uid);
+        console.log(displayName);
+        dispatch(
+          login({
+            uid: uid,
+            displayName: user.displayName,
+          })
+        );
+      } else {
+        dispatch(logout());
+      }
+    });
+    // return () => {
+    //   unSub();
+    // };
+  }, [dispatch, auth]);
+
   return (
     <>
-      <SApp>
-        <STtl>Todo App Width Redux</STtl>
-        <Input />
-        <SWrap>
-          <Undone />
-          <Done />
-        </SWrap>
-      </SApp>
+      {user.uid ? (
+        <div className="App">
+          <TodosField />
+        </div>
+      ) : (
+        <Signin />
+      )}
     </>
   );
-}
+};
 
 export default App;
-
-const SApp = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin: 0 auto;
-  max-width: 80%;
-  padding: 40px 0px;
-`;
-
-const SWrap = styled.div`
-  display: flex;
-  width: 980px;
-  justify-content: space-between;
-  margin-top: 40px;
-`;
-
-const STtl = styled.h1`
-  font-family: "Nothing You Could Do", cursive;
-  font-size: 38px;
-`;
