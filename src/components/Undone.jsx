@@ -2,38 +2,52 @@ import styled from "styled-components";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { deleteTask, moveTask } from "../TasksSlice";
-import { getDatabase, ref, child, get } from "firebase/database";
+import { getDatabase, ref, child, get, remove, set } from "firebase/database";
 import { addStore } from "../TasksSlice";
+import { db } from "../firebase";
 
 export const Undone = () => {
   const tasks = useSelector((state) => state.tasks.undone);
   const uid = useSelector((state) => state.users.user.uid);
-  // const taskCountNum = useSelector((state) => state.tasks.taskCount);
-  console.log(tasks[0]);
+  const taskCountNum = useSelector((state) => state.tasks.taskCount);
+  console.log(tasks);
 
   const dispatch = useDispatch();
 
-  const onDeleteTask = (i, uid) => {
+  //タスクを削除し、databaseからも削除
+  const onDeleteTask = (i, uid, id) => {
+    console.log(id);
+    const db = getDatabase();
+    remove(ref(db, `users/${uid}/undone/${id}`));
     dispatch(deleteTask({ index: i, uid: uid }));
   };
-  const onDone = (i, task) => {
-    dispatch(moveTask({ index: i, taskObject: task }));
-  };
 
-  // const deleteFromFireBase = () => {
-  //   const db = getDatabase();
-  //   db.ref("users").child(`${uid}/undone/0`).remove();
-  // };
+  //タスクをDoneに移動し、databaseも削除→Doneに移動
+  const onDone = (i, task, id) => {
+    console.log(task.id);
+    const db = getDatabase();
+    set(ref(db, `users/${uid}/done/${id}`), {
+      content: task.content,
+      completed: true,
+      id: task.id,
+    });
+    remove(ref(db, `users/${uid}/undone/${task.id}`));
+    dispatch(
+      moveTask({ index: i, content: task.content, completed: task.completed })
+    );
+  };
 
   useEffect(() => {
     const dbRef = ref(getDatabase());
-    get(child(dbRef, `users/${uid}/undone/`))
+    get(child(dbRef, `users/${uid}/`))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          const res = snapshot.val();
-          // const undoneNum = res.length;
-          // console.log(undoneNum);
-          dispatch(addStore(res));
+          const result = snapshot.val();
+          const resUndone = result.undone;
+          const cleanUndone = Object.values(resUndone);
+          // console.log(cleanUndone);
+          // cleanUndone.map((val) => console.log(val.content));
+          dispatch(addStore(cleanUndone));
         } else {
           console.log("No data available");
         }
@@ -46,19 +60,16 @@ export const Undone = () => {
   return (
     <STaskArea>
       <STaskttl>Undone Tasks</STaskttl>
-      {/* <Sspan>{`今タスクが ${taskCountNum} 個あるよ`}</Sspan> */}
       {tasks.length >= 5 && <Sp>You can add a task up to 5!</Sp>}
 
       <ul>
-        {/* {tasks[0].map((task) => console.log(task))} */}
-
-        {/* {tasks.map((task, i) => (
+        {tasks.map((task, i) => (
           <SList key={i}>
             <Spar>{task.content}</Spar>
-            <SBtn onClick={() => onDone(i, task)}>Done</SBtn>
-            <SDBtn onClick={() => onDeleteTask(i, uid)}>Delete</SDBtn>
+            <SBtn onClick={() => onDone(i, task, task.id)}>Done</SBtn>
+            <SDBtn onClick={() => onDeleteTask(i, uid, task.id)}>Delete</SDBtn>
           </SList>
-        ))} */}
+        ))}
       </ul>
     </STaskArea>
   );

@@ -1,28 +1,59 @@
 import styled from "styled-components";
+import { useEffect } from "react";
+import { getDatabase, ref, child, get, remove, set } from "firebase/database";
 import { useSelector, useDispatch } from "react-redux";
-import { backTask } from "../TasksSlice";
+import { moveTask, backTask } from "../TasksSlice";
 
 export const Done = () => {
   const tasks = useSelector((state) => state.tasks.done);
-  // const taskRev = task.slice().reverse();
+  const uid = useSelector((state) => state.users.user.uid);
   const dispatch = useDispatch();
+  console.log(tasks);
 
-  const onClickBack = (i, task) => {
-    dispatch(backTask({ index: i, taskObject: task }));
+  const onClickBack = (i, task, id) => {
+    const db = getDatabase();
+    set(ref(db, `users/${uid}/undone/${id}`), {
+      content: task.content,
+      completed: true,
+      id: task.id,
+    });
+    remove(ref(db, `users/${uid}/done/${task.id}`));
+    dispatch(
+      backTask({ index: i, content: task.content, completed: task.completed })
+    );
   };
+
+  useEffect(() => {
+    const dbRef = ref(getDatabase());
+    get(child(dbRef, `users/${uid}/`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const result = snapshot.val();
+          const resDone = result.done;
+          console.log(resDone);
+          const cleanDone = Object.values(resDone);
+          console.log(cleanDone);
+          // cleanUndone.map((val) => console.log(val.content));
+          dispatch(moveTask(cleanDone));
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [dispatch, uid]);
 
   return (
     <STaskArea>
       <STaskttl>Done Tasks</STaskttl>
       <ul>
-        {tasks
-          // .filter((task) => task.completed === true)
-          .map((task, i) => (
-            <SList key={i}>
-              <Spar>{task.content}</Spar>
-              <SBtn onClick={() => onClickBack(i, task)}>Back</SBtn>
-            </SList>
-          ))}
+        {tasks.map((task, i) => (
+          <SList key={i}>
+            <Spar>{task.content}</Spar>
+            <SBtn onClick={() => onClickBack(i, task, task.id)}>Back</SBtn>
+          </SList>
+        ))}
       </ul>
     </STaskArea>
   );

@@ -16,7 +16,7 @@ const App = () => {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log(user);
+        // console.log(user);
         const uid = user.uid;
         const displayName = user.displayName;
         console.log(uid);

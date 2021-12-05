@@ -23,13 +23,15 @@ export const TasksSlice = createSlice({
     addStore: (state, action) => {
       const tasks = action.payload;
       const taskCountNum = tasks.length;
-      // console.log(taskCountNum);
+      const id = tasks.id;
+
       const undDone = [...state.undone];
       const newUnDone = undDone.concat(tasks);
       return {
         undone: [...newUnDone],
         done: [...state.done],
         taskCount: taskCountNum,
+        id: id,
       };
     },
 
@@ -37,11 +39,6 @@ export const TasksSlice = createSlice({
     deleteTask: (state, action) => {
       console.log(action.payload);
       const uid = action.payload.uid;
-
-      // const db = getDatabase();
-      // remove(ref(db, "users/" + uid + "/0/"));
-      // const db = getDatabase();
-      // db.ref("users").child(`${uid}/undone/0`).remove();
 
       const i = action.payload.index;
       const newTasks = [...state.undone];
@@ -55,30 +52,30 @@ export const TasksSlice = createSlice({
     //タスクの完了でDone Tasksに移動する
     moveTask: (state, action) => {
       const target = action.payload;
-      const moveTasks = [...state.undone];
-      console.log(target);
-      console.log(target.index);
-      console.log(target.taskObject.content);
-      moveTasks.splice(target.index, 1);
+      const unDone = [...state.undone];
+      // console.log(target.index);
+      unDone.splice(target.index, 1);
 
-      const doneTasks = [...state.done, target.taskObject];
-
+      const movedTasks = [...state.done];
+      const newDone = movedTasks.concat(target);
       return {
-        undone: [...moveTasks],
-        done: [...doneTasks],
+        undone: [...unDone],
+        done: [...newDone],
       };
     },
 
     //タスクを未完了に戻す
     backTask: (state, action) => {
       const target = action.payload;
+      console.log(target);
       const newDoneTasks = [...state.done];
       newDoneTasks.splice(target.index, 1);
 
-      const newUndoneTasks = [...state.undone, target.taskObject];
+      const undoneTasks = [...state.undone];
+      const newUnDone = undoneTasks.concat(target);
 
       return {
-        undone: [...newUndoneTasks],
+        undone: [...newUnDone],
         done: [...newDoneTasks],
       };
     },

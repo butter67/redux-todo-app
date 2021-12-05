@@ -53,6 +53,7 @@ const MainWrap = styled.div`
   flex-direction: column;
   margin: 0 auto;
   margin-top: 14px;
+  margin-bottom: 160px;
 `;
 
 const Sul = styled.ul`

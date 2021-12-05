@@ -9,33 +9,27 @@ import { getDatabase, ref, set, push } from "firebase/database";
 export const Input = () => {
   const uid = useSelector((state) => state.users.user.uid);
   const taskCountNum = useSelector((state) => state.tasks.taskCount); //途中
-  // console.log(taskCountNum);
 
   const [val, setVal] = useState("");
-  const [countNum, setCountNum] = useState(0);
+  // const [countNum, setCountNum] = useState(taskCountNum);
   const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setVal(() => e.target.value);
   };
 
-  // const onAddStore = () => {
-  //   if (!val) return;
-  //   dispatch(addStore({ content: val, completed: false }));
-  //   setVal("");
-  // };
-
   const writeUserData = (content, completed) => {
     if (!val) return;
-    dispatch(addStore({ content: val, completed: false }));
     const db = getDatabase();
-    push(ref(db, `users/${uid}/undone`), {
-      //途中
+    const id = push(ref(db, `users/${uid}/undone`)).key; //先にpush()時に振り分けられるkeyをgetしておく。
+    console.log(id);
+    set(ref(db, `users/${uid}/undone/${id}`), {
+      //上記のkeyをpathに、set()で入れたい値をset。push()だとおかしくなるので注意
       content: val,
       completed: false,
+      id: id,
     });
-    // setCountNum((countNum) => countNum + 1);
-    // console.log(countNum);
+    dispatch(addStore({ content: val, completed: false, id: id }));
     setVal("");
   };
 

@@ -52,6 +52,7 @@ export const Signin = () => {
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
+        console.log(errorCode);
         console.log(errorMessage);
       });
   };
@@ -79,49 +80,95 @@ export const Signin = () => {
   const handleGoogleRegister = () => {};
 
   return (
-    <div>
-      <section>
-        <h1>{isLogin ? "Log in" : "Register"}</h1>
-        {!isLogin && (
-          <>
-            <p>User Name :</p>
-            <input
-              name="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+    <Sdiv>
+      <SMain>
+        <Sh1>{isLogin ? "Log in" : "Register"}</Sh1>
+        <section>
+          {!isLogin && (
+            <>
+              {/* <Sp>User Name :</Sp> */}
+              <input
+                name="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Your Name"
+              />
+            </>
+          )}
+          {/* <Sp>Email :</Sp> */}
+          <label htmlFor="email">
+            <Sinput
+              type="text"
+              name="email"
+              value={email}
+              onChange={onClickEmail}
+              placeholder="Your Email"
             />
-          </>
-        )}
-        <p>Email :</p>
-        <label htmlFor="email">
-          <input
-            type="text"
-            name="email"
-            value={email}
-            onChange={onClickEmail}
-          />
-        </label>
-      </section>
-      <section>
-        <p>Password : </p>
-        <label htmlFor="password">
-          <input type="password" value={password} onChange={onClickPassword} />
-        </label>
-      </section>
+          </label>
+        </section>
+        <section>
+          {/* <Sp>Password : </Sp> */}
+          <label htmlFor="password">
+            <Sinput
+              type="password"
+              value={password}
+              onChange={onClickPassword}
+              placeholder="Password"
+            />
+          </label>
+        </section>
 
-      {isLogin ? (
-        <button onClick={handleLogin}>Log in</button>
-      ) : (
-        <button onClick={handleRegister}>Register</button>
-      )}
-      {/* <button onClick={handleLogin}>{isLogin ? "Log in" : "Register"}</button> */}
-      <span>Forgot a password?</span>
-      <span onClick={isLoginHandler}>
-        {isLogin ? "Create New account?" : "Back to Login"}
-      </span>
-      <button onClick={handleGoogleRegister}>
-        {isLogin ? "Log in width Google" : "Register width Google"}
-      </button>
-    </div>
+        {isLogin ? (
+          <button onClick={handleLogin}>Log in</button>
+        ) : (
+          <button onClick={handleRegister}>Register</button>
+        )}
+
+        <span>Forgot a password?</span>
+        <span onClick={isLoginHandler}>
+          {isLogin ? "Create New account?" : "Back to Login"}
+        </span>
+        <button onClick={handleGoogleRegister}>
+          {isLogin ? "Log in width Google" : "Register width Google"}
+        </button>
+      </SMain>
+    </Sdiv>
   );
 };
+
+const Sdiv = styled.div`
+  position: relative;
+`;
+
+const Sh1 = styled.h1`
+  font-size: 36px;
+`;
+
+const SMain = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #dbebc4;
+  padding: 20px 40px 60px 40px;
+  border-radius: 10px;
+`;
+
+const Sinput = styled.input`
+  border: 1px solid lightgray;
+  padding: 16px;
+  min-width: 280px;
+  border-radius: 50px;
+  font-size: 20px;
+  margin-bottom: 16px;
+`;
+
+// const Sp = styled.p`
+//   font-size: 22px;
+//   font-weight: 600;
+//   margin-bottom: 8px;
+// `;
